@@ -449,16 +449,32 @@ var resizePizzas = function(size) {
   }
 
   // Iterates through pizza elements on the page and changes their widths
+  //
   function changePizzaSizes(size) {
-    for (var i = 0; i < document.querySelectorAll(".randomPizzaContainer").length; i++) {
-      var dx = determineDx(document.querySelectorAll(".randomPizzaContainer")[i], size);
-      var newwidth = (document.querySelectorAll(".randomPizzaContainer")[i].offsetWidth + dx) + 'px';
-      document.querySelectorAll(".randomPizzaContainer")[i].style.width = newwidth;
+    var newWidth;
+    switch(size) {
+        case "1":
+            newWidth = 25;
+            break;
+        case "2":
+            newWidth = 33.3;
+            break;
+        case "3":
+            newWidth = 50;
+            break;
+        default:
+            console.log("bug in sizeSwitcher");
     }
-  }
-
+// Create a variable randomPizzas to avoid querying of document.querySelectorAll(".randomPizzaContainer") and use this variable in the for loop
+    var randomPizzas = document.querySelectorAll(".randomPizzaContainer");
+// In the base code,we had a property offset width followed by a change in the Style.This causes a FSL.So,in the modified code,
+// we have the changePizzaSizes determine the widths and in the for loop,it sets the width for every element to the corresponding percentage determined 
+// by the switch statement.As pointed out by Cameron, there is no query selecting inside the for loop and no FSL.
+    for (var i = 0; i < randomPizzas.length; i++) {
+        randomPizzas[i].style.width = newWidth + "%";
+    }
+}
   changePizzaSizes(size);
-
   // User Timing API is awesome
   window.performance.mark("mark_end_resize");
   window.performance.measure("measure_pizza_resize", "mark_start_resize", "mark_end_resize");
@@ -502,9 +518,23 @@ function updatePositions() {
   frame++;
   window.performance.mark("mark_start_frame");
 
-  var items = document.querySelectorAll('.mover');
-  for (var i = 0; i < items.length; i++) {
-    var phase = Math.sin((document.body.scrollTop / 1250) + (i % 5));
+// items.length is stored in a variable ilen.
+// The value of (document.body.scrollTop / 1250) is initalized to a variable outside the for loop.
+// The repeating values are stored in a separate array arr.
+// getElementsByClassName is used instead of querySelectorAll.
+// All of these optimizations were based on inputs from Office hours and fellow Udacians on the Discussion forum.
+
+var items = document.getElementsByClassName('.mover');
+var ilen = items.length;
+var scr = document.body.scrollTop;  
+var arr = [];
+var i;
+for (i = 0; i < 5; i++) {
+      arr.push(Math.sin((scr / 1250) + i));
+    }
+  
+  for (i = 0; i < ilen; i++) {
+    var phase = arr[i % 5];
     items[i].style.left = items[i].basicLeft + 100 * phase + 'px';
   }
 
